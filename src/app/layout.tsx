@@ -1,11 +1,16 @@
-import type { Metadata } from "next";
 // import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import type { Metadata } from "next";
 import Header from "@/components/Header";
+
+import "./globals.css";
+import "@/styles/comunes.module.css";
+/* import { Inter } from 'next/font/google';
+
+const inter = Inter({ subsets: ['latin'] }); */
 
 export const metadata: Metadata = {
   title: "Weather App",
-  description: "Tu clima diario",
+  description: "Tu clima personalizado",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

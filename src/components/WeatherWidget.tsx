@@ -22,8 +22,8 @@ export default function WeatherWidget() {
     if (userCoords) {
       setCoords(userCoords);
     } else if (error) {
-      // Fallback a Madrid si hay error
-      setCoords({ latitude: 40.4168, longitude: -3.7038 });
+      // Fallback a Osaka, no Madrid si hay error
+      setCoords({ latitude: 34.6937, longitude: 135.5022 });
     }
   }, [userCoords, error]);
 
@@ -36,7 +36,7 @@ export default function WeatherWidget() {
       try {
         // 1. Clima
         const weatherRes = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${coords.latitude}&longitude=${coords.longitude}&current_weather=true`
+          `https://api.open-meteo.com/v1/forecast?latitude=${coords.latitude}&longitude=${coords.longitude}&current_weather=true&timezone=auto`
         );
         const weatherData = await weatherRes.json();
         setWeather(weatherData.current_weather);
@@ -76,7 +76,7 @@ export default function WeatherWidget() {
 
       {error && (
         <p style={{ backgroundColor: '#fff3cd', color: '#856404', padding: '0.5rem', borderRadius: '4px' }}>
-          ⚠️ No pudimos acceder a tu ubicación. Mostrando el clima de Madrid por defecto.
+          ⚠️ No pudimos acceder a tu ubicación. Mostrando el clima de Osaka por defecto.
         </p>
       )}
 

@@ -12,7 +12,7 @@ export default function useCurrentLocation() {
 	useEffect(() => {
 		if (!navigator.geolocation) {
 			setError('No se activó la geolocalización');
-			setCoords({ latitude: 40.4168, longitude: -3.7038 }); // Madrid
+			setCoords({ latitude: 34.6937, longitude: 135.5022 }); // Osaka, no Madrid
 			return;
 		}
 
@@ -25,7 +25,7 @@ export default function useCurrentLocation() {
 			},
 			(err) => {
 				setError(err.message);
-				setCoords({ latitude: 40.4168, longitude: -3.7038 }); // Madrid como fallback
+				setCoords({ latitude: 34.6937, longitude: 135.5022 }); // Osaka, no Madrid
 			}
 		);
 	}, []);
