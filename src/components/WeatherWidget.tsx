@@ -2,6 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import useCurrentLocation from '@/hooks/useCurrentLocation';
+import { getCurrentWeather } from '@/utils/getCurrentWeather';
+import { getLocationNameFromCoords } from '@/utils/getLocationNameFromCoords';
+import { getWeatherDescription } from '@/utils/getWeatherDescription';
+import styles from '@/styles/comunes.module.css';
 
 type WeatherData = {
   temperature: number;
@@ -17,58 +21,39 @@ export default function WeatherWidget() {
   const [loading, setLoading] = useState(false);
   const [locationName, setLocationName] = useState<string | null>(null);
 
-  // Establecer coordenadas: reales o fallback (Madrid)
   useEffect(() => {
     if (userCoords) {
       setCoords(userCoords);
     } else if (error) {
-      // Fallback a Osaka, no Madrid si hay error
-      setCoords({ latitude: 34.6937, longitude: 135.5022 });
+      setCoords({ latitude: 34.6937, longitude: 135.5022 }); // Osaka
     }
   }, [userCoords, error]);
 
-  // Obtener clima y nombre del lugar
   useEffect(() => {
     if (!coords) return;
 
-    const fetchWeatherAndLocation = async () => {
+    const fetchData = async () => {
       setLoading(true);
-      try {
-        // 1. Clima
-        const weatherRes = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${coords.latitude}&longitude=${coords.longitude}&current_weather=true&timezone=auto`
-        );
-        const weatherData = await weatherRes.json();
-        setWeather(weatherData.current_weather);
-
-        // 2. Nombre del lugar con Nominatim
-        const nominatimRes = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?lat=${coords.latitude}&lon=${coords.longitude}&format=json`,
-          {
-            headers: {
-              'User-Agent': 'TuNombreApp/1.0 (tuemail@ejemplo.com)' // Requerido por Nominatim
-            }
-          }
-        );
-        const nominatimData = await nominatimRes.json();
-        const address = nominatimData.address;
-        const name =
-          address.city ||
-          address.town ||
-          address.village ||
-          address.hamlet ||
-          address.county ||
-          'Ubicación desconocida';
-        setLocationName(name);
-      } catch (err) {
-        console.error('Error:', err);
-      } finally {
-        setLoading(false);
-      }
+      const weatherData = await getCurrentWeather(coords.latitude, coords.longitude);
+      const location = await getLocationNameFromCoords(coords.latitude, coords.longitude);
+      setWeather(weatherData);
+      setLocationName(location);
+      setLoading(false);
     };
 
-    fetchWeatherAndLocation();
+    fetchData();
   }, [coords]);
+
+  let dayOfWeek: string | null = null;
+  let isDaytime: boolean = true;
+
+  if (weather) {
+    const date = new Date(weather.time);
+    dayOfWeek = date.toLocaleDateString('es-ES', { weekday: 'long' });
+    const hour = date.getHours();
+    isDaytime = hour >= 6 && hour < 20;
+  }
+
 
   return (
     <div>
@@ -76,7 +61,7 @@ export default function WeatherWidget() {
 
       {error && (
         <p style={{ backgroundColor: '#fff3cd', color: '#856404', padding: '0.5rem', borderRadius: '4px' }}>
-          ⚠️ No pudimos acceder a tu ubicación. Mostrando el clima de Osaka por defecto.
+          ⚠️ No se pudo acceder a tu ubicación. Mostrando el clima de Osaka por defecto.
         </p>
       )}
 
@@ -84,10 +69,13 @@ export default function WeatherWidget() {
         <p>🌤️ Cargando el clima...</p>
       ) : weather ? (
         <>
-          <p>📍 Lat: {coords.latitude.toFixed(2)}, Lon: {coords.longitude.toFixed(2)}</p>
-          <p>🌡️ Temperatura: {weather.temperature}°C</p>
-          <p>💨 Viento: {weather.windspeed} km/h</p>
-          <p>🕒 Última actualización: {new Date(weather.time).toLocaleTimeString()}</p>
+          <p className={styles.notImportant}>📍 Lat: {coords.latitude.toFixed(2)}, Lon: {coords.longitude.toFixed(2)}</p>
+          <p>🌡️ Temperatura: {Math.round(weather.temperature)}°C</p>
+          <p className={styles.notImportant}>💨 Viento: {weather.windspeed} km/h</p>
+					<br/>
+          <p className={styles.notImportant}>🕒 Última actualización: {new Date(weather.time).toLocaleTimeString('es-ES')}</p>
+          <p>🗓️ {dayOfWeek} {getWeatherDescription(weather.weathercode, isDaytime)}</p>
+
         </>
       ) : (
         <p>⚠️ No se pudo obtener el clima.</p>

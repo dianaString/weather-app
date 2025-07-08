@@ -11,7 +11,7 @@ export default function Hoy() {
   ); */
   return (
     <main>
-      <h3>¿Se ve algo?</h3>
+      <h3 className={styles.notImportant}>¿Se ve algo?</h3>
       <WeatherWidget />
     </main>
   )
