@@ -5,6 +5,8 @@ import useCurrentLocation from '@/hooks/useCurrentLocation';
 import { getCurrentWeather } from '@/utils/getCurrentWeather';
 import { getLocationNameFromCoords } from '@/utils/getLocationNameFromCoords';
 import { getWeatherDescription } from '@/utils/getWeatherDescription';
+import { debugHourlyWeather } from '@/utils/debugHourlyWeather';
+import { generateDaySummary } from '@/utils/generateDaySummary';
 import styles from '@/styles/comunes.module.css';
 
 type WeatherData = {
@@ -12,7 +14,13 @@ type WeatherData = {
   windspeed: number;
   weathercode: number;
   time: string;
+  hourly: {
+    time: string[];
+    temperature_2m: number[];
+    weathercode: number[];
+  };
 } | null;
+
 
 export default function WeatherWidget() {
   const { coords: userCoords, error } = useCurrentLocation();
@@ -44,6 +52,7 @@ export default function WeatherWidget() {
     fetchData();
   }, [coords]);
 
+
   let dayOfWeek: string | null = null;
   let isDaytime: boolean = true;
 
@@ -54,6 +63,18 @@ export default function WeatherWidget() {
     isDaytime = hour >= 6 && hour < 20;
   }
 
+  let summary: string | null = null;
+  let debugLines: string[] = [];
+
+  if (weather && weather.hourly) {
+    summary = generateDaySummary(weather.hourly, weather.time);
+    debugLines = debugHourlyWeather(
+      weather.hourly.weathercode,
+      weather.hourly.time,
+      weather.hourly.temperature_2m,
+      weather.time
+    );
+  }
 
   return (
     <div>
@@ -72,7 +93,6 @@ export default function WeatherWidget() {
           <p className={styles.notImportant}>📍 Lat: {coords.latitude.toFixed(2)}, Lon: {coords.longitude.toFixed(2)}</p>
           <p>🌡️ Temperatura: {Math.round(weather.temperature)}°C</p>
           <p className={styles.notImportant}>💨 Viento: {weather.windspeed} km/h</p>
-					<br/>
           <p className={styles.notImportant}>🕒 Última actualización: {new Date(weather.time).toLocaleTimeString('es-ES')}</p>
           <p>🗓️ {dayOfWeek} {getWeatherDescription(weather.weathercode, isDaytime)}</p>
 
@@ -80,6 +100,19 @@ export default function WeatherWidget() {
       ) : (
         <p>⚠️ No se pudo obtener el clima.</p>
       )}
+
+      {summary && <p>{summary}</p>}
+      {debugLines && (
+        <div>
+          <h3>🧪 Diagnóstico horario</h3>
+          <ul>
+            {debugLines.map((line, index) => (
+              <li key={index}>{line}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
     </div>
   );
 }

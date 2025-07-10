@@ -1,7 +1,7 @@
 export function getWeatherDescription(code: number, isDaytime: boolean): string {
   const descriptions: Record<number, { day: string; night: string }> = {
     0: { day: '☀️ Soleado', night: '🌕 Despejado' },
-    1: { day: '🌤️ Mayormente soleado', night: '🌖 Parcialmente despejado' },
+    1: { day: '🌤️ Mayormente soleado', night: '🌖 Mayormente despejado' },
     2: { day: '⛅ Parcialmente nublado', night: '☁️ Parcialmente nublado' },
     3: { day: '☁️ Nublado', night: '☁️ Nublado' },
     45: { day: '🌫️ Niebla', night: '🌫️ Niebla' },
